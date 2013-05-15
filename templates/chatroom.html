@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script>
+        var WS = null;
+        var room_name = "{{room_name}}";
+
+        function initWebsocket(room_name){
+            var ws = new WebSocket("ws://localhost:8888/websocket?room="+room_name);
+            ws.onmessage = function (evt) {
+                $("#chat_log").prepend("<p>"+ evt.data+"</p>");
+            };
+            ws.onclose = function(evt){
+                console.log('onclose')
+                setTimeout(reconnect,10000);
+            };
+            ws.onerror = function(evt){
+                console.log('enerror');
+            };
+            return ws;
+        }
+
+        function reconnect(){
+            WS = initWebsocket(room_name);
+        }
+
+        function send_message(){
+            WS.send(
+                    JSON.stringify(
+                            {room:room_name , msg:$("#text_box").val()}
+                    )
+            );
+        }
+
+        window.onload = function(){
+            WS = initWebsocket(room_name);
+
+            $("#submit_button").click(function(){
+                send_message();
+            });
+        }
+
+    </script>
+</head>
+<body>
+<h1>{{room_name}}</h1>
+
+<form>
+    <input type="text" id="text_box">
+    <input type="button" id="submit_button" value="submit">
+</form>
+<div id="chat_log">
+</div>
+</body>
+</html>
